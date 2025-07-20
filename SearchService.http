@@ -1,0 +1,27 @@
+### Buscar todos os itens do menu
+GET http://localhost:5003/api/search/menu-items
+Accept: application/json
+
+###
+
+### Buscar itens com filtros
+GET http://localhost:5003/api/search/menu-items?name=burger&isAvailable=true&page=1&pageSize=5
+Accept: application/json
+
+###
+
+### Buscar por faixa de preço
+GET http://localhost:5003/api/search/menu-items?minPrice=10&maxPrice=50&sortBy=price&sortDescending=false
+Accept: application/json
+
+###
+
+### Buscar itens disponíveis ordenados por preço crescente
+GET http://localhost:5003/api/search/menu-items?isAvailable=true&sortBy=price&sortDescending=false
+Accept: application/json
+
+###
+
+### Buscar itens por nome
+GET http://localhost:5003/api/search/menu-items?name=pizza
+Accept: application/json 
