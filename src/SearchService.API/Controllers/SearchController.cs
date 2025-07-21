@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using SearchService.Application.Queries;
 using SearchService.Domain.Models;
 using Prometheus;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SearchService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin, Cozinha, Cliente")]
 public class SearchController : ControllerBase
 {
     private readonly IMediator _mediator;

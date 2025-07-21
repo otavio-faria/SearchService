@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Prometheus;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SearchService.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [AllowAnonymous]
     public class MetricsController : ControllerBase
     {
         private static readonly Counter SearchRequestsTotal = Metrics

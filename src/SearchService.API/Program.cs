@@ -4,6 +4,9 @@ using SearchService.Domain.Interfaces;
 using SearchService.Infrastructure.Configurations;
 using SearchService.Infrastructure.Persistence;
 using Prometheus;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +35,6 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddScoped<ISearchRepository, MongoSearchRepository>();
 
-// Configurar métricas do Prometheus
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
 
@@ -46,6 +48,27 @@ builder.Services.AddCors(options =>
     });
 });
 
+var jwtKey = builder.Configuration["JWT_KEY"];
+var jwtIssuer = builder.Configuration["JWT_ISSUER"];
+var jwtAudience = builder.Configuration["JWT_AUDIENCE"];
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey!);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+        };
+    });
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -55,9 +78,9 @@ app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Configurar métricas do Prometheus
 app.UseMetricServer();
 app.UseHttpMetrics();
 
