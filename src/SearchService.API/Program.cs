@@ -3,6 +3,7 @@ using SearchService.Application.Handlers;
 using SearchService.Domain.Interfaces;
 using SearchService.Infrastructure.Configurations;
 using SearchService.Infrastructure.Persistence;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,10 +27,14 @@ builder.Services.AddScoped(sp =>
     return client.GetDatabase(databaseName);
 });
 
-builder.Services.AddMediatR(cfg => 
+builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(SearchMenuItemsHandler).Assembly));
 
 builder.Services.AddScoped<ISearchRepository, MongoSearchRepository>();
+
+// Configurar métricas do Prometheus
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
 
 builder.Services.AddCors(options =>
 {
@@ -43,11 +48,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("AllowAll");
 
@@ -55,6 +57,11 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+// Configurar métricas do Prometheus
+app.UseMetricServer();
+app.UseHttpMetrics();
 
-app.Run(); 
+app.MapControllers();
+app.MapHealthChecks("/health");
+
+app.Run();
